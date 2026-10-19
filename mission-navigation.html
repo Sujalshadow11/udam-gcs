@@ -472,8 +472,8 @@ tr:hover{background:rgba(0,240,255,0.05)}
     </div>
   </header>
   <nav class="sb-nav">
-    <a href="index.html"><span>Telemetry Dashboard</span></a>
-    <a href="mission-navigation.html" class="act"><span>Mission &amp; Navigation</span></a>
+    <a href="newindex.html" onclick="if(!location.pathname.toLowerCase().includes('new'))this.href='index.html'"><span>Telemetry Dashboard</span></a>
+    <a href="newmission-navigation.html" class="act"><span>Mission &amp; Navigation</span></a>
   </nav>
   <div class="sb-ic-badge">
     <div class="sb-ic-title">ARCHITECTURE :</div>
@@ -1221,7 +1221,7 @@ function updateDroneTelemetry(data){
   var dPill = document.getElementById('nav-stream-pill');
 
   if(dDot) dDot.className = 'dot ok';
-  if(dPill) dPill.textContent = 'Telemetry 4Hz Active';
+  if(dPill) dPill.textContent = 'Telemetry 10Hz Active';
 
   // Process GNSS Data
   if(data.gnss_lat && data.gnss_lon && (data.gnss_lat !== 0 || data.gnss_lon !== 0)){
