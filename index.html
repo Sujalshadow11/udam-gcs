@@ -514,7 +514,8 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;margin:14px 0;text-align:center">
         <button id="btn-cal-mag" onclick="startCal(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Calibrate Magnetometer</button>
-        <div id="sub-cal-mag" style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">30s Auto 3D Tumble</div>
+        <div id="sub-cal-mag" style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">25s Auto 3D Tumble</div>
+        <button onclick="toggleDirection()" class="sec" style="font-size:10px;padding:4px 10px;margin-top:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:var(--txm);cursor:pointer;border-radius:3px" title="Inverts rotation direction if clockwise turn reads counter-clockwise">Flip Polarity (CW/CCW)</button>
       </div>
     </div>
 
@@ -916,6 +917,19 @@ function updateDOM(){
   document.getElementById('vcs').textContent = isConnected ? d.cal_status : '--';
   document.getElementById('calst').textContent = isConnected ? d.cal_status : 'Offline';
 
+  var subMag = document.getElementById('sub-cal-mag');
+  if(subMag){
+    if(isConnected && d.cal_status && d.cal_status.indexOf('CALIBRATING') !== -1){
+      subMag.innerHTML = '<span style="color:var(--wn);font-weight:700">' + d.cal_status + '</span>';
+    } else if(isConnected && d.cal_status === 'CALIBRATED & SAVED'){
+      subMag.innerHTML = '<span style="color:var(--ok);font-weight:700">Calibrated &amp; Saved</span>';
+    } else if(isConnected && d.cal_status && d.cal_status.indexOf('CAL FAILED') !== -1){
+      subMag.innerHTML = '<span style="color:var(--er);font-weight:700">' + d.cal_status + '</span>';
+    } else if(!isConnected){
+      subMag.textContent = '25s Auto 3D Tumble';
+    }
+  }
+
   setEl('vfix', fixName(d.gnss_fix));
   setEl('vgf',  isConnected ? (d.gnss_sats_used + ' / ' + d.gnss_sats) : '0 / 0');
   setEl('vll',  isConnected && d.gnss_ok
@@ -1021,9 +1035,18 @@ function startCal(btnEl){
     return;
   }
   sendCloudCommand('CALIBRATE');
-  showBannerToast("3D Magnetometer Calibration initiated. Slowly rotate the board in all directions for 30s.", "info");
+  showBannerToast("3D Magnetometer Calibration initiated. Slowly rotate the board in all directions for 25s.", "info");
   var sub = document.getElementById('sub-cal-mag');
-  if(sub) sub.innerHTML = '<span style="color:var(--wn)">Rotating in 3D...</span>';
+  if(sub) sub.innerHTML = '<span style="color:var(--wn)">Rotating in 3D (25s)...</span>';
+}
+
+function toggleDirection(){
+  if(!isConnected){
+    showBannerToast("UDAM Module is offline. Connect hotspot and verify telemetry first.", "err");
+    return;
+  }
+  sendCloudCommand('TOGGLE_DIR');
+  showBannerToast("Magnetometer rotation polarity toggled & saved to EEPROM.", "info");
 }
 
 function calBaro(btnEl){
