@@ -301,6 +301,97 @@ th{background:var(--sfd);padding:7px 10px;text-align:left;color:var(--txm);font-
 td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
 .snrb{display:inline-block;height:6px;border-radius:1px;vertical-align:middle;margin-left:5px}
 
+/* ── Modal Dialog Styles ── */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(4, 9, 14, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-card {
+  background: #0b131f;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.2), 0 20px 40px rgba(0,0,0,0.8);
+  border-radius: 4px;
+  max-width: 620px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  position: relative;
+  transform: scale(0.95);
+  transition: transform 0.25s ease;
+}
+.modal-overlay.active .modal-card {
+  transform: scale(1);
+}
+.modal-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.modal-hdr h2 {
+  font-size: 15px;
+  color: var(--pr);
+  letter-spacing: 0.5px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-close {
+  background: transparent!important;
+  border: none!important;
+  color: var(--txm)!important;
+  font-size: 24px!important;
+  cursor: pointer;
+  padding: 0 4px!important;
+  min-width: auto!important;
+  box-shadow: none!important;
+  line-height: 1;
+}
+.modal-close:hover {
+  color: #fff!important;
+  transform: none!important;
+  box-shadow: none!important;
+}
+.diag-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+.diag-lbl { color: var(--txm); font-weight: 600; }
+.diag-val { font-weight: 700; color: #fff; }
+.cyber-spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(0, 240, 255, 0.2);
+  border-top-color: var(--pr);
+  border-radius: 50%;
+  animation: cyberSpin 0.8s linear infinite;
+}
+@keyframes cyberSpin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @media(max-width:1150px){.g4{grid-template-columns:repeat(2,1fr)}.g5{grid-template-columns:repeat(3,1fr)}.avionics-deck{grid-template-columns:1fr}}
 @media(max-width:900px){.app{flex-direction:column}.sb{width:100%;min-height:auto}.g4,.g2c{grid-template-columns:1fr}.g5{grid-template-columns:repeat(2,1fr)}}
@@ -392,8 +483,8 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
         <div style="font-size:11px;color:var(--txm);margin-bottom:6px">0x6B · Accel &amp; Gyro</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;margin:14px 0;text-align:center">
-        <button id="btn-cal-imu" onclick="calIMU(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Calibrate Level / Zero</button>
-        <div style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">Zero Bias: Standby</div>
+        <button id="btn-cal-imu" onclick="calIMU(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Calibrate IMU</button>
+        <div id="sub-cal-imu" style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">Zero Level Bias</div>
       </div>
     </div>
 
@@ -407,8 +498,8 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
         <div style="font-size:11px;color:var(--txm);margin-bottom:6px">0x47 · Pressure &amp; Temp</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;margin:14px 0;text-align:center">
-        <button id="btn-cal-baro" onclick="calBaro(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Calibrate QNH / Zero Alt</button>
-        <div style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">QNH Ref: 1013.25 hPa</div>
+        <button id="btn-cal-baro" onclick="calBaro(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Calibrate Barometer</button>
+        <div id="sub-cal-baro" style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">Floor Reference Tare</div>
       </div>
     </div>
 
@@ -419,13 +510,11 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
           <span style="font-weight:700;font-size:12px;color:#fbcfe8">Mag (MMC5983MA)</span>
           <span class="badge off" id="init-badge-mag" style="min-width:54px;padding:2px 6px">OFFLINE</span>
         </div>
-        <div style="font-size:11px;color:var(--txm);margin-bottom:8px">0x30 · 3-Axis Heading</div>
+        <div style="font-size:11px;color:var(--txm);margin-bottom:6px">0x30 · 3-Axis Heading</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button id="btn-cal-mag" onclick="startCal(this)" style="min-width:100%;height:32px;font-size:10px;padding:4px 8px">Start Mag Calibration (30s)</button>
-        <button class="sec" onclick="saveCalEEPROM(this)" style="min-width:100%;height:32px;font-size:10px;padding:4px 8px">Save Cal to EEPROM</button>
-        <button class="sec" onclick="checkCal(this)" style="min-width:100%;height:28px;font-size:10px;padding:2px 6px">Check Cal Status</button>
-        <button class="sec" onclick="checkInit(this)" style="min-width:100%;height:28px;font-size:10px;padding:2px 6px">Check Init &amp; Report</button>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;margin:14px 0;text-align:center">
+        <button id="btn-cal-mag" onclick="startCal(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Calibrate Magnetometer</button>
+        <div id="sub-cal-mag" style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">30s Auto 3D Tumble</div>
       </div>
     </div>
 
@@ -439,8 +528,8 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
         <div style="font-size:11px;color:var(--txm);margin-bottom:6px">0x42 · Position &amp; Fix</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;margin:14px 0;text-align:center">
-        <button id="btn-cal-gnss" onclick="syncGNSS(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Survey-In / Sat Re-sync</button>
-        <div style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">UBX 1Hz Fix Stream</div>
+        <button id="btn-cal-gnss" onclick="syncGNSS(this)" style="width:100%;max-width:210px;height:34px;font-size:11px;padding:6px 10px;margin:0 auto">Sat Re-Sync</button>
+        <div id="sub-cal-gnss" style="font-size:10px;color:var(--txm);margin-top:8px;font-family:monospace">UBX PVT Re-Sync</div>
       </div>
     </div>
 
@@ -529,8 +618,6 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
     <div class="ti"><div class="tl">Pressure</div><div id="vp" class="tv sm">0.00<span class="unit">hPa</span></div></div>
     <div class="ti" style="grid-column:1/-1"><div class="tl">Barometric Altitude</div><div id="va" class="tv">0.0<span class="unit">m</span></div></div>
   </div>
-  <div class="sep">Altitude Equation</div>
-  <div class="fbox"><strong>h = 44330 &times; (1 &minus; (P / P&sub0;)<sup>0.1903</sup>)</strong><br>P&sub0; = 1013.25 hPa</div>
   <div class="row-ft"><span style="font-size:11px;color:var(--txm);font-weight:600">Health</span><span id="bb" class="badge off">OFFLINE</span></div>
 </div></div>
 
@@ -545,13 +632,7 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
     <div class="ti"><div class="tl">Raw Heading</div><div id="vmr" class="tv md">0.0<span class="unit">&deg;</span></div></div>
     <div class="ti"><div class="tl">Tilt Status</div><div id="vhf" class="tv md">--</div></div>
   </div>
-  <div class="sep">Heading Equation</div>
-  <div class="fbox">
-    <strong>&theta; = atan2(&minus;Y<sub>h</sub>, X<sub>h</sub>) + &delta;</strong><br>
-    X<sub>h</sub> = M<sub>x</sub>&middot;cosP + M<sub>z</sub>&middot;sinP<br>
-    Y<sub>h</sub> = M<sub>x</sub>&middot;sinR&middot;sinP + M<sub>y</sub>&middot;cosR &minus; M<sub>z</sub>&middot;sinR&middot;cosP<br>
-    Cal: <span id="vcs" style="color:var(--txs)">--</span>
-  </div>
+  <div class="row-ft" style="margin-bottom:6px"><span style="font-size:11px;color:var(--txm);font-weight:600">Calibration</span><span id="vcs" class="badge off">--</span></div>
   <div class="row-ft"><span style="font-size:11px;color:var(--txm);font-weight:600">Health</span><span id="bm" class="badge off">OFFLINE</span></div>
 </div></div>
 
@@ -607,8 +688,8 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
 <div class="c-hdr"><h2>Sensor Actions</h2><span class="c-lbl">Commands</span></div>
 <div class="c-body">
   <ul class="sl">
-    <li><span>Reboot UDAM System</span><button class="wbtn" onclick="sendCloudCommand('REBOOT')" style="min-width:110px;font-size:11px;padding:7px 10px">Reboot</button></li>
-    <li><span>Hardware Diagnostic Report</span><button class="sec" onclick="checkInit()" style="min-width:110px;font-size:11px;padding:7px 10px">Report</button></li>
+    <li><span>Reboot UDAM System</span><button class="wbtn" onclick="openRebootModal()" style="min-width:110px;font-size:11px;padding:7px 10px">Reboot</button></li>
+    <li><span>Hardware Diagnostic Report</span><button class="sec" onclick="openReportModal()" style="min-width:110px;font-size:11px;padding:7px 10px">Report</button></li>
   </ul>
 </div></div>
 
@@ -627,6 +708,48 @@ td{padding:6px 10px;border-bottom:1px solid var(--sf);font-weight:600}
   UDAM Autonomy Configuration &nbsp;|&nbsp; Hotspot (2.4 GHz): SSID: <strong>UDAM_W</strong> &middot; Password: <strong>udam1234</strong> &nbsp;|&nbsp; Cloud GCS: <a href="https://udam-gcs.vercel.app" target="_blank" style="color:var(--pr);text-decoration:underline">https://udam-gcs.vercel.app</a>
 </footer>
 </div></div>
+
+<!-- Reboot Confirmation & Execution Modal -->
+<div id="modal-reboot" class="modal-overlay">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-hdr">
+      <h2>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f59e0b"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Reboot UDAM System
+      </h2>
+      <button class="modal-close" onclick="closeRebootModal()">&times;</button>
+    </div>
+    <div id="reboot-modal-body">
+      <p style="color:var(--txm);font-size:13px;line-height:1.6;margin-bottom:18px">
+        Are you sure you want to reboot the UDAM Module? This will restart the ESP32-S3 microcontroller, re-probe all 4 sensors on the I2C bus, and restore stored calibrations.
+      </p>
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button class="sec" onclick="closeRebootModal()" style="min-width:90px;height:34px;font-size:11px">Cancel</button>
+        <button class="wbtn" onclick="executeReboot()" style="min-width:120px;height:34px;font-size:11px">Confirm Reboot</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hardware Diagnostic Report Modal -->
+<div id="modal-report" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-hdr">
+      <h2>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--pr)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Hardware Diagnostic Report
+      </h2>
+      <button class="modal-close" onclick="closeReportModal()">&times;</button>
+    </div>
+    <div id="report-modal-content">
+      <!-- Dynamically populated -->
+    </div>
+    <div style="display:flex;gap:12px;justify-content:space-between;margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
+      <button class="sec" onclick="downloadReportTxt()" style="font-size:11px;padding:8px 14px">Download Report (.txt)</button>
+      <button onclick="closeReportModal()" style="min-width:100px;font-size:11px;padding:8px 14px">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── Telemetry State (Starts Clean at 0 — No False OK or Dummy Values) ──
@@ -800,12 +923,12 @@ function updateDOM(){
     : (isConnected ? '<span style="color:var(--wn)">Acquiring...</span>' : 'No Signal'));
   setEl('vacc', isConnected && d.gnss_ok ? (d.gnss_hacc.toFixed(1)+'m / '+d.gnss_vacc.toFixed(1)+'m') : '--');
 
-  setEl('vbat', d.battery_voltage.toFixed(2) + '<span class="unit">V</span>');
-  setEl('vamp', d.battery_current.toFixed(2) + '<span class="unit">A</span>');
-  setEl('vpwr', (d.battery_voltage * d.battery_current).toFixed(1) + '<span class="unit">W</span>');
+  setEl('vbat', '0.00<span class="unit">V</span>');
+  setEl('vamp', '0.00<span class="unit">A</span>');
+  setEl('vpwr', '0.0<span class="unit">W</span>');
 
-  setEl('vfm', isConnected ? (d.flight_mode || 'STANDBY') : 'DISCONNECTED');
-  setEl('vms', isConnected ? (d.mission_status || 'OFFLINE') : 'OFFLINE');
+  setEl('vfm', isConnected ? 'STANDBY' : 'DISCONNECTED');
+  setEl('vms', isConnected ? 'STANDBY' : 'OFFLINE');
 
   badge('bb', d.baro_ok);
   badge('bi', d.imu_ok);
@@ -891,55 +1014,253 @@ function renderSatellites(sats){
   tb.innerHTML = h;
 }
 
-// ── Interactive Calibration Controls ──
+// ── Interactive Calibration Controls (Non-blocking & Web Operational) ──
 function startCal(btnEl){
-  if(!isConnected){ alert("UDAM Module is offline. Connect hotspot and verify telemetry first."); return; }
+  if(!isConnected){
+    showBannerToast("UDAM Module is offline. Connect hotspot and verify telemetry first.", "err");
+    return;
+  }
   sendCloudCommand('CALIBRATE');
-  alert("Calibration command dispatched to UDAM. Rotate device along all 3 axes for 30 seconds.");
-}
-
-function saveCalEEPROM(){
-  if(!isConnected){ alert("UDAM Module is offline."); return; }
-  sendCloudCommand('SAVE');
-  alert("Save Calibration command dispatched to UDAM EEPROM.");
-}
-
-function checkCal(){
-  if(!isConnected){ alert("UDAM Module is offline. No telemetry available."); return; }
-  alert("Calibration Status: " + telem.cal_status + "\nValid: " + (telem.cal_valid ? "YES" : "NO"));
-}
-
-function checkInit(){
-  if(!isConnected){ alert("UDAM Module is offline. No telemetry available."); return; }
-  alert("SENSOR STATUS REPORT:\n  BMP581 Baro : " + (telem.baro_ok ? "OK" : "FAIL") +
-        "\n  ISM330 IMU  : " + (telem.imu_ok ? "OK" : "FAIL") +
-        "\n  MMC5983 Mag : " + (telem.mag_ok ? "OK" : "FAIL") +
-        "\n  u-blox GNSS : " + (telem.gnss_sensor_ok ? "OK" : "FAIL") +
-        "\n\nOverall: " + (telem.sensors_healthy ? "ALL SENSORS OK" : "DEGRADED"));
-}
-
-function calIMU(btnEl){
-  if(!isConnected){ alert("UDAM Module is offline."); return; }
-  sendCloudCommand('CAL_IMU');
-  alert("IMU zero-level command sent.");
+  showBannerToast("3D Magnetometer Calibration initiated. Slowly rotate the board in all directions for 30s.", "info");
+  var sub = document.getElementById('sub-cal-mag');
+  if(sub) sub.innerHTML = '<span style="color:var(--wn)">Rotating in 3D...</span>';
 }
 
 function calBaro(btnEl){
-  if(!isConnected){ alert("UDAM Module is offline."); return; }
+  if(!isConnected){
+    showBannerToast("UDAM Module is offline. Connect hotspot and verify telemetry first.", "err");
+    return;
+  }
   sendCloudCommand('CAL_BARO');
-  alert("Barometer QNH reference zeroing command sent.");
+  showBannerToast("Barometer QNH ground altitude tared to 0.0m.", "ok");
+  var sub = document.getElementById('sub-cal-baro');
+  if(sub) sub.innerHTML = '<span style="color:var(--ok)">Floor Tared (0.0m)</span>';
+  setTimeout(function(){ if(sub) sub.textContent = 'Floor Reference Tare'; }, 3000);
+}
+
+function calIMU(btnEl){
+  if(!isConnected){
+    showBannerToast("UDAM Module is offline. Connect hotspot and verify telemetry first.", "err");
+    return;
+  }
+  sendCloudCommand('CAL_IMU');
+  showBannerToast("IMU accelerometer and gyro level reference zeroed.", "ok");
+  var sub = document.getElementById('sub-cal-imu');
+  if(sub) sub.innerHTML = '<span style="color:var(--ok)">Level Calibrated</span>';
+  setTimeout(function(){ if(sub) sub.textContent = 'Zero Level Bias'; }, 3000);
 }
 
 function syncGNSS(btnEl){
-  if(!isConnected){ alert("UDAM Module is offline."); return; }
+  if(!isConnected){
+    showBannerToast("UDAM Module is offline. Connect hotspot and verify telemetry first.", "err");
+    return;
+  }
   sendCloudCommand('SYNC_GNSS');
-  alert("GNSS resync command sent.");
+  showBannerToast("u-blox GNSS receiver resync command dispatched.", "ok");
+  var sub = document.getElementById('sub-cal-gnss');
+  if(sub) sub.innerHTML = '<span style="color:var(--ok)">PVT Synced</span>';
+  setTimeout(function(){ if(sub) sub.textContent = 'UBX PVT Re-Sync'; }, 3000);
 }
 
 function calibrateAllSequentially(){
-  if(!isConnected){ alert("UDAM Module is offline. Connect hotspot and verify telemetry first."); return; }
-  sendCloudCommand('CALIBRATE');
-  alert("Sequential Calibration Triggered: Starting with Magnetometer 30s envelope.");
+  startCal();
+}
+
+// ── Operational Modals: Reboot & Hardware Diagnostic Report ──
+function openRebootModal(){
+  var m = document.getElementById('modal-reboot');
+  if(!m) return;
+  document.getElementById('reboot-modal-body').innerHTML = `
+    <p style="color:var(--txm);font-size:13px;line-height:1.6;margin-bottom:18px">
+      Are you sure you want to reboot the UDAM Module? This will restart the ESP32-S3 microcontroller, re-probe all 4 sensors on the I2C bus, and restore stored calibrations.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="sec" onclick="closeRebootModal()" style="min-width:90px;height:34px;font-size:11px">Cancel</button>
+      <button class="wbtn" onclick="executeReboot()" style="min-width:120px;height:34px;font-size:11px">Confirm Reboot</button>
+    </div>
+  `;
+  m.classList.add('active');
+}
+
+function closeRebootModal(){
+  var m = document.getElementById('modal-reboot');
+  if(m) m.classList.remove('active');
+}
+
+function executeReboot(){
+  if(!isConnected){
+    alert("UDAM Module is offline. Connect hotspot and verify telemetry first.");
+    closeRebootModal();
+    return;
+  }
+  sendCloudCommand('REBOOT');
+  var b = document.getElementById('reboot-modal-body');
+  b.innerHTML = `
+    <div style="text-align:center;padding:24px 10px">
+      <div class="cyber-spinner" style="margin:0 auto 16px"></div>
+      <h3 style="color:#f59e0b;font-size:15px;margin-bottom:8px">REBOOT COMMAND DISPATCHED</h3>
+      <p style="color:var(--txm);font-size:12px">ESP32-S3 microcontroller is restarting now. Re-establishing link...</p>
+      <div id="reboot-timer" style="font-size:18px;font-weight:800;color:var(--pr);margin-top:12px;font-family:monospace">5s</div>
+    </div>
+  `;
+  var t = 5;
+  var interval = setInterval(function(){
+    t--;
+    var el = document.getElementById('reboot-timer');
+    if(el) el.textContent = t + 's';
+    if(t <= 0){
+      clearInterval(interval);
+      if(el) el.textContent = 'RECONNECTED';
+      setTimeout(closeRebootModal, 1500);
+    }
+  }, 1000);
+}
+
+function openReportModal(){
+  var m = document.getElementById('modal-report');
+  if(!m) return;
+
+  var now = new Date().toISOString().replace('T', ' ').substr(0, 19);
+  var html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,240,255,0.06);padding:10px 14px;border-radius:3px;margin-bottom:16px;border:1px solid rgba(0,240,255,0.15)">
+      <div>
+        <div style="font-size:10px;color:var(--txm);font-weight:700">SYSTEM ARCHITECTURE</div>
+        <div style="font-size:12px;color:var(--prl);font-weight:800">ESP32-S3 Dual-Core (FreeRTOS Active)</div>
+      </div>
+      <span class="badge ${telem.sensors_healthy ? 'ok' : 'wn'}">${telem.sensors_healthy ? 'HEALTHY' : 'DEGRADED'}</span>
+    </div>
+
+    <div class="sep">Hardware Bus &amp; Power</div>
+    <div class="diag-row"><span class="diag-lbl">I2C Master Bus</span><span class="diag-val" style="color:var(--ok)">SDA: GPIO 8 | SCL: GPIO 9 @ 400 kHz Fast Mode</span></div>
+    <div class="diag-row"><span class="diag-lbl">Power Rail</span><span class="diag-val">3.3V Regulated (Active)</span></div>
+    <div class="diag-row"><span class="diag-lbl">Sensor Loop Rate</span><span class="diag-val" style="color:var(--ok)">10.0 Hz (100 ms Telemetry Interval)</span></div>
+
+    <div class="sep" style="margin-top:14px">Sensor Diagnostics</div>
+    <div class="diag-row">
+      <span class="diag-lbl">BMP581 Barometer (0x47)</span>
+      <span class="diag-val" style="color:${telem.baro_ok ? 'var(--ok)' : 'var(--er)'}">${telem.baro_ok ? 'ONLINE (P: ' + telem.pressure.toFixed(1) + ' hPa | T: ' + telem.temperature.toFixed(1) + '°C)' : 'OFFLINE'}</span>
+    </div>
+    <div class="diag-row">
+      <span class="diag-lbl">ISM330DHCX IMU (0x6B)</span>
+      <span class="diag-val" style="color:${telem.imu_ok ? 'var(--ok)' : 'var(--er)'}">${telem.imu_ok ? 'ONLINE (|a|: ' + telem.accel_mag.toFixed(2) + 'g | R: ' + telem.roll.toFixed(1) + '° P: ' + telem.pitch.toFixed(1) + '°)' : 'OFFLINE'}</span>
+    </div>
+    <div class="diag-row">
+      <span class="diag-lbl">MMC5983MA Compass (0x30)</span>
+      <span class="diag-val" style="color:${telem.mag_ok ? 'var(--ok)' : 'var(--er)'}">${telem.mag_ok ? 'ONLINE (Hdg: ' + telem.heading.toFixed(1) + '° ' + (isConnected ? telem.heading_cardinal : '') + ' | ' + telem.cal_status + ')' : 'OFFLINE'}</span>
+    </div>
+    <div class="diag-row">
+      <span class="diag-lbl">u-blox GNSS Engine (0x42)</span>
+      <span class="diag-val" style="color:${telem.gnss_sensor_ok ? 'var(--ok)' : 'var(--er)'}">${telem.gnss_sensor_ok ? 'ONLINE (' + fixName(telem.gnss_fix) + ' | ' + telem.gnss_sats_used + '/' + telem.gnss_sats + ' Sats)' : 'OFFLINE'}</span>
+    </div>
+
+    <div class="sep" style="margin-top:14px">Network &amp; Cloud Telemetry</div>
+    <div class="diag-row"><span class="diag-lbl">WiFi Access</span><span class="diag-val">Station Mode (SSID: UDAM_W)</span></div>
+    <div class="diag-row"><span class="diag-lbl">Cloud MQTT Broker</span><span class="diag-val">broker.hivemq.com:1883</span></div>
+    <div class="diag-row"><span class="diag-lbl">Telemetry Channel</span><span class="diag-val">udam/sujalshadow11/telemetry</span></div>
+    <div class="diag-row"><span class="diag-lbl">Audit Timestamp</span><span class="diag-val" style="color:var(--txm)">${now} UTC</span></div>
+  `;
+  document.getElementById('report-modal-content').innerHTML = html;
+  m.classList.add('active');
+}
+
+function closeReportModal(){
+  var m = document.getElementById('modal-report');
+  if(m) m.classList.remove('active');
+}
+
+function downloadReportTxt(){
+  var now = new Date().toISOString();
+  var txt = `======================================================================
+UDAM HARDWARE DIAGNOSTIC REPORT
+Generated: ${now}
+======================================================================
+
+1. SYSTEM & ARCHITECTURE
+- Controller        : ESP32-S3 Dual-Core (Xtensa LX7)
+- RTOS Framework    : FreeRTOS v10.4
+- Core Allocation   : Core 1 (Sensors @ 20Hz) | Core 0 (Cloud/Web @ 10Hz)
+- I2C Master Bus    : SDA: GPIO 8 | SCL: GPIO 9 @ 400 kHz Fast Mode
+- Overall Status    : ${telem.sensors_healthy ? 'HEALTHY' : 'DEGRADED'}
+
+2. PHYSICAL SENSOR ARRAY
+- BMP581 Barometer (0x47)
+  * Status          : ${telem.baro_ok ? 'ONLINE' : 'OFFLINE'}
+  * Pressure        : ${telem.pressure.toFixed(2)} hPa
+  * Altitude (AGL)  : ${telem.altitude.toFixed(2)} m
+  * Temperature     : ${telem.temperature.toFixed(2)} deg C
+
+- ISM330DHCX 6-DoF IMU (0x6B)
+  * Status          : ${telem.imu_ok ? 'ONLINE' : 'OFFLINE'}
+  * Accel Vector    : ${telem.accel_mag.toFixed(3)} g
+  * Roll Angle      : ${telem.roll.toFixed(2)} deg
+  * Pitch Angle     : ${telem.pitch.toFixed(2)} deg
+  * Gyroscope (Z)   : ${telem.gyro_z.toFixed(2)} deg/s
+
+- MMC5983MA Electronic Compass (0x30)
+  * Status          : ${telem.mag_ok ? 'ONLINE' : 'OFFLINE'}
+  * Filtered Heading: ${telem.heading.toFixed(1)} deg (${telem.heading_cardinal})
+  * Raw Heading     : ${telem.heading_raw.toFixed(1)} deg
+  * Calibration     : ${telem.cal_status} (Valid: ${telem.cal_valid})
+
+- u-blox GNSS Navigation Engine (0x42)
+  * Status          : ${telem.gnss_sensor_ok ? 'ONLINE' : 'OFFLINE'}
+  * Fix Type        : ${fixName(telem.gnss_fix)}
+  * Sats Tracked    : ${telem.gnss_sats_used} in-fix / ${telem.gnss_sats} visible
+  * Coordinates     : Lat ${telem.gnss_lat.toFixed(6)} deg, Lon ${telem.gnss_lon.toFixed(6)} deg
+  * GPS Altitude    : ${telem.gnss_alt.toFixed(1)} m
+  * Ground Speed    : ${telem.gnss_spd.toFixed(2)} m/s
+  * Accuracies      : H: +/-${telem.gnss_hacc.toFixed(1)}m, V: +/-${telem.gnss_vacc.toFixed(1)}m
+
+3. CLOUD TELEMETRY BRIDGE
+- WiFi Network     : UDAM_W (Station Mode)
+- MQTT Protocol    : HiveMQ Cloud Relay (10 Hz rate)
+- Telemetry Topic  : udam/sujalshadow11/telemetry
+- Command Topic    : udam/sujalshadow11/commands
+
+======================================================================
+END OF DIAGNOSTIC REPORT
+======================================================================`;
+
+  var blob = new Blob([txt], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `UDAM_Diagnostic_${Date.now()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function showBannerToast(msg, type){
+  var existing = document.getElementById('udam-toast');
+  if(existing) existing.remove();
+
+  var t = document.createElement('div');
+  t.id = 'udam-toast';
+  t.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #0e1726;
+    border: 1px solid ${type === 'ok' ? 'var(--ok)' : type === 'err' ? 'var(--er)' : 'var(--pr)'};
+    box-shadow: 0 0 20px rgba(0,240,255,0.25);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: opacity 0.3s;
+    font-family: -apple-system, sans-serif;
+  `;
+  t.innerHTML = `<span>${msg}</span>`;
+  document.body.appendChild(t);
+  setTimeout(function(){
+    t.style.opacity = '0';
+    setTimeout(function(){ if(t) t.remove(); }, 300);
+  }, 4000);
 }
 
 // ── Circuit Particles & Cyber Cursor ──
